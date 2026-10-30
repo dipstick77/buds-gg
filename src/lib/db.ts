@@ -17,8 +17,14 @@ import { normalizeHandle, validateHandle } from "./reserved";
 import { resolvePlatformUrl } from "./platforms";
 import { seedIfEmpty } from "./seed";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = process.env.BUDS_DB_PATH || path.join(DATA_DIR, "buds.db");
+const DATA_DIR =
+  process.env.BUDS_DB_PATH
+    ? path.dirname(process.env.BUDS_DB_PATH)
+    : process.env.VERCEL
+      ? path.join("/tmp", "buds-gg-data")
+      : path.join(process.cwd(), "data");
+const DB_PATH =
+  process.env.BUDS_DB_PATH || path.join(DATA_DIR, "buds.db");
 
 let dbInstance: Database.Database | null = null;
 
