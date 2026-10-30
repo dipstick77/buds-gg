@@ -71,6 +71,12 @@ npm run start    # serve production build
 npm run lint     # eslint
 ```
 
+## Deploying on Vercel
+
+- Local/dev: file SQLite at `./data/buds.db` (or `BUDS_DB_PATH`).
+- **On Vercel (`VERCEL=1`)**: SQLite runs **in-memory** and reseeds demo profiles (`maya` / `kai` / `nova`) on each cold start. Claims/edits do **not** persist across serverless instances — expected for this MVP preview. Swap to Supabase/Postgres for durable production data.
+- Optional env on the Vercel project: `NEXT_PUBLIC_APP_URL` = your deployment URL; Discord vars when ready.
+
 ## Data upgrade path
 
 Keep the TypeScript types in `src/lib/types.ts` and repository functions in `src/lib/db.ts`. Replacing SQLite with Supabase means swapping those DB calls for Postgres queries / RLS while keeping the same profile JSON shape returned to the UI.

@@ -17,18 +17,22 @@ import { normalizeHandle, validateHandle } from "./reserved";
 import { resolvePlatformUrl } from "./platforms";
 import { seedIfEmpty } from "./seed";
 
-const DATA_DIR =
-  process.env.BUDS_DB_PATH
-    ? path.dirname(process.env.BUDS_DB_PATH)
-    : process.env.VERCEL
-      ? path.join("/tmp", "buds-gg-data")
-      : path.join(process.cwd(), "data");
+/** On Vercel, use in-memory SQLite so serverless cold starts always reseed demos.
+ *  Writes (claims/edits) do not persist across instances — fine for preview MVP.
+ *  Local/dev keeps a file DB under ./data (or BUDS_DB_PATH).
+ */
+const ON_VERCEL = Boolean(process.env.VERCEL);
+const DATA_DIR = process.env.BUDS_DB_PATH
+  ? path.dirname(process.env.BUDS_DB_PATH)
+  : path.join(process.cwd(), "data");
 const DB_PATH =
-  process.env.BUDS_DB_PATH || path.join(DATA_DIR, "buds.db");
+  process.env.BUDS_DB_PATH ||
+  (ON_VERCEL ? ":memory:" : path.join(DATA_DIR, "buds.db"));
 
 let dbInstance: Database.Database | null = null;
 
 function ensureDir() {
+  if (DB_PATH === ":memory:") return;
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
@@ -36,7 +40,7 @@ function ensureDir() {
 
 function migrate(db: Database.Database) {
   db.exec(`
-    PRAGMA journal_mode = WAL;
+    PRAGMA journal_mode = ${DB_PATH === ":memory:" ? "MEMORY" : "WAL"};
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE,
