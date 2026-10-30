@@ -152,14 +152,14 @@ export function EditForm({
 
   return (
     <div className="edit-shell">
-      <header className="edit-header">
+      <header className="edit-mobile-bar">
         <Link href="/" className="brand-mark">
-          buds.gg
+          buds<span className="brand-accent">.gg</span>
         </Link>
-        <div className="edit-header-actions">
+        <div style={{ display: "flex", gap: "0.25rem" }}>
           {publicPath && claimed ? (
             <Link href={publicPath} className="nav-link">
-              View public
+              View
             </Link>
           ) : null}
           <Link href="/api/auth/logout" className="nav-link">
@@ -168,10 +168,33 @@ export function EditForm({
         </div>
       </header>
 
+      <aside className="edit-sidebar">
+        <Link href="/" className="brand-mark">
+          buds<span className="brand-accent">.gg</span>
+        </Link>
+        <nav className="edit-sidebar__nav" aria-label="Settings">
+          <span className="edit-nav-item is-active">User Settings</span>
+          <span className="edit-nav-item">Profile</span>
+          <span className="edit-nav-item">Platforms</span>
+          <span className="edit-nav-item">Games</span>
+          <span className="edit-nav-item">Theme</span>
+        </nav>
+        <div className="edit-sidebar__footer">
+          {publicPath && claimed ? (
+            <Link href={publicPath} className="nav-link">
+              View public page
+            </Link>
+          ) : null}
+          <Link href="/api/auth/logout" className="nav-link">
+            Log out
+          </Link>
+        </div>
+      </aside>
+
       <main className="edit-main">
         <h1 className="edit-title">Edit your card</h1>
         <p className="edit-sub">
-          Explicit Save for MVP. Mobile-first public page at{" "}
+          Explicit Save for MVP. Public page at{" "}
           <code>buds.gg/{"{handle}"}</code>.
         </p>
 

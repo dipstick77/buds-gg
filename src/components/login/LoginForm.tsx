@@ -40,10 +40,9 @@ export function LoginForm({
 
   return (
     <div className="login-shell">
-      <div className="login-atmosphere" aria-hidden />
-      <main className="login-main motion-rise">
-        <Link href="/" className="brand-hero brand-hero--sm">
-          buds.gg
+      <main className="login-panel">
+        <Link href="/" className="brand-mark">
+          buds<span className="brand-accent">.gg</span>
         </Link>
         <h1 className="login-title">Claim your gaming card</h1>
         <p className="login-sub">
@@ -52,7 +51,10 @@ export function LoginForm({
         </p>
 
         {discordReady ? (
-          <Link href="/api/auth/discord" className="cta-btn cta-btn--primary cta-btn--lg cta-btn--block">
+          <Link
+            href="/api/auth/discord"
+            className="cta-btn cta-btn--primary cta-btn--lg cta-btn--block"
+          >
             Continue with Discord
           </Link>
         ) : (
