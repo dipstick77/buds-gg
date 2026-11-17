@@ -7,6 +7,7 @@ import {
   sizeLabel,
   type SeedGroup,
 } from "@/lib/groups";
+import { sanitizeExternalUrl } from "@/lib/urls";
 
 export function GroupProfile({ group }: { group: SeedGroup }) {
   return (
@@ -101,14 +102,16 @@ export function GroupProfile({ group }: { group: SeedGroup }) {
                     ? "Apply to join"
                     : "Invite only"}
               </button>
-              <a
-                href={group.discordInvite}
-                className="cta-btn cta-btn--ghost cta-btn--block"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open Discord
-              </a>
+              {sanitizeExternalUrl(group.discordInvite) ? (
+                <a
+                  href={sanitizeExternalUrl(group.discordInvite)!}
+                  className="cta-btn cta-btn--ghost cta-btn--block"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open Discord
+                </a>
+              ) : null}
             </section>
 
             <section className="group-profile__panel">

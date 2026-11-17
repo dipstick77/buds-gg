@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getPlatform } from "@/lib/platforms";
 import type { PublicProfilePayload } from "@/lib/types";
+import { sanitizeExternalUrl } from "@/lib/urls";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { TemporaryContext } from "@/components/ui/TemporaryContext";
 
@@ -50,7 +51,7 @@ export function ProfileView({
             <ul className="platform-list">
               {primary.map((p) => {
                 const meta = getPlatform(p.platform);
-                const openUrl = p.url || null;
+                const openUrl = sanitizeExternalUrl(p.url);
                 const title = p.label || meta.name;
                 return (
                   <li key={p.id} className="platform-row">
@@ -124,7 +125,7 @@ export function ProfileView({
               <ul className="platform-list">
                 {rest.map((p) => {
                   const meta = getPlatform(p.platform);
-                  const openUrl = p.url || null;
+                  const openUrl = sanitizeExternalUrl(p.url);
                   return (
                     <li key={p.id} className="platform-row">
                       <div className="platform-meta">

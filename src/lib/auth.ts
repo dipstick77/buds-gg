@@ -3,6 +3,7 @@ import { deleteSession, getUserBySession } from "./db";
 import type { User } from "./types";
 
 export const SESSION_COOKIE = "buds_session";
+export const OAUTH_STATE_COOKIE = "buds_oauth_state";
 
 export function discordConfigured(): boolean {
   return Boolean(
@@ -10,6 +11,20 @@ export function discordConfigured(): boolean {
       process.env.DISCORD_CLIENT_SECRET &&
       process.env.DISCORD_REDIRECT_URI,
   );
+}
+
+/** Hosted / production: require AUTH_DEV_ALLOWLIST for email stand-in login. */
+export function isDevEmailLoginEnabled(): boolean {
+  const allowlist =
+    process.env.AUTH_DEV_ALLOWLIST?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
+  const hosted =
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.env.VERCEL) ||
+    Boolean(process.env.CURSOR_APP_ID);
+  if (hosted) return allowlist.length > 0;
+  return true;
 }
 
 export async function getCurrentUser(): Promise<User | null> {

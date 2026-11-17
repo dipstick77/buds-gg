@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { discordConfigured } from "@/lib/auth";
+import { randomBytes } from "node:crypto";
+import {
+  OAUTH_STATE_COOKIE,
+  discordConfigured,
+  sessionCookieOptions,
+} from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -15,18 +20,24 @@ export async function GET(request: Request) {
     process.env.DISCORD_REDIRECT_URI ||
     `${process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin}/api/auth/discord/callback`;
 
+  const state = randomBytes(24).toString("hex");
+
   const params = new URLSearchParams({
     client_id: clientId,
     response_type: "code",
     scope: "identify email",
     redirect_uri: redirectUri,
-    prompt: "none",
+    prompt: "consent",
+    state,
   });
 
-  // Allow consent when prompt none fails — Discord ignores unknown; use consent default
-  params.set("prompt", "consent");
-
-  return NextResponse.redirect(
+  const res = NextResponse.redirect(
     `https://discord.com/api/oauth2/authorize?${params.toString()}`,
   );
+  res.cookies.set(OAUTH_STATE_COOKIE, state, {
+    ...sessionCookieOptions(60 * 10),
+    maxAge: 60 * 10,
+    sameSite: "lax",
+  });
+  return res;
 }

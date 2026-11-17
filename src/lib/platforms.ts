@@ -1,4 +1,5 @@
 import type { PlatformCta, PlatformId } from "./types";
+import { sanitizeExternalUrl } from "./urls";
 
 export interface PlatformMeta {
   id: PlatformId;
@@ -17,7 +18,7 @@ export const PLATFORMS: PlatformMeta[] = [
     helper: "Open profile is the usual CTA.",
     primaryCta: "open",
     buildUrl: (value) => {
-      if (/^https?:\/\//i.test(value)) return value;
+      if (/^https?:\/\//i.test(value)) return sanitizeExternalUrl(value);
       const clean = value.replace(/^\/+/, "");
       if (clean.startsWith("id/") || clean.startsWith("profiles/")) {
         return `https://steamcommunity.com/${clean}`;
@@ -74,7 +75,7 @@ export const PLATFORMS: PlatformMeta[] = [
     helper: "Open channel.",
     primaryCta: "open",
     buildUrl: (value) => {
-      if (/^https?:\/\//i.test(value)) return value;
+      if (/^https?:\/\//i.test(value)) return sanitizeExternalUrl(value);
       return `https://twitch.tv/${value.replace(/^@/, "")}`;
     },
   },
@@ -85,7 +86,7 @@ export const PLATFORMS: PlatformMeta[] = [
     helper: "Open channel.",
     primaryCta: "open",
     buildUrl: (value) => {
-      if (/^https?:\/\//i.test(value)) return value;
+      if (/^https?:\/\//i.test(value)) return sanitizeExternalUrl(value);
       const handle = value.startsWith("@") ? value : `@${value}`;
       return `https://youtube.com/${handle}`;
     },
@@ -96,7 +97,10 @@ export const PLATFORMS: PlatformMeta[] = [
     placeholder: "https://…",
     helper: "Any URL your buds need.",
     primaryCta: "open",
-    buildUrl: (value) => (/^https?:\/\//i.test(value) ? value : `https://${value}`),
+    buildUrl: (value) => {
+      if (/^https?:\/\//i.test(value)) return sanitizeExternalUrl(value);
+      return sanitizeExternalUrl(`https://${value}`);
+    },
   },
 ];
 
@@ -109,7 +113,8 @@ export function resolvePlatformUrl(
   value: string,
   url?: string | null,
 ): string | null {
-  if (url && url.trim()) return url.trim();
+  if (url && url.trim()) return sanitizeExternalUrl(url);
   const meta = getPlatform(platform);
-  return meta.buildUrl?.(value.trim()) ?? null;
+  const built = meta.buildUrl?.(value.trim()) ?? null;
+  return built ? sanitizeExternalUrl(built) : null;
 }

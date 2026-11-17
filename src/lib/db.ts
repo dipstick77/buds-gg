@@ -15,6 +15,7 @@ import type {
 } from "./types";
 import { normalizeHandle, validateHandle } from "./reserved";
 import { resolvePlatformUrl } from "./platforms";
+import { sanitizeExternalUrl } from "./urls";
 import { seedIfEmpty } from "./seed";
 
 /** On Vercel, use in-memory SQLite so serverless cold starts always reseed demos.
@@ -351,7 +352,7 @@ export function updateProfile(userId: string, input: ProfileUpdateInput): Public
       if (!p.value.trim()) return;
       const platform = p.platform as PlatformId;
       const url =
-        p.url?.trim() ||
+        sanitizeExternalUrl(p.url) ||
         resolvePlatformUrl(platform, p.value) ||
         "";
       insert.run(

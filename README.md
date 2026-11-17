@@ -42,7 +42,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Trusted server jobs only (never ship to browser) |
 | `DISCORD_CLIENT_ID` / `_SECRET` / `_REDIRECT_URI` | No | Discord OAuth login |
 | `BUDS_DB_PATH` | No | Local SQLite path for vanity demos |
-| `AUTH_DEV_ALLOWLIST` | No | Restrict `/api/auth/dev` emails |
+| `AUTH_DEV_ALLOWLIST` | Hosted: yes for email login | Comma-separated emails allowed for `/api/auth/dev`. Required on production/Vercel/Cursor; unset disables that path. |
 
 ## What’s in this PR
 

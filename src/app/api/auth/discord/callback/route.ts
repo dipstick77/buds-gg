@@ -1,19 +1,48 @@
 import { NextResponse } from "next/server";
 import { createSession, upsertDiscordUser } from "@/lib/db";
-import { SESSION_COOKIE, discordConfigured, sessionCookieOptions } from "@/lib/auth";
+import {
+  OAUTH_STATE_COOKIE,
+  SESSION_COOKIE,
+  discordConfigured,
+  sessionCookieOptions,
+} from "@/lib/auth";
 
 export const runtime = "nodejs";
+
+function readCookie(request: Request, name: string): string | null {
+  const cookie = request.headers.get("cookie") || "";
+  const match = cookie.match(new RegExp(`${name}=([^;]+)`));
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const err = url.searchParams.get("error");
+  const state = url.searchParams.get("state");
+  const expected = readCookie(request, OAUTH_STATE_COOKIE);
+
+  const clearState = (res: NextResponse) => {
+    res.cookies.set(OAUTH_STATE_COOKIE, "", { ...sessionCookieOptions(0), maxAge: 0 });
+    return res;
+  };
 
   if (err || !code) {
-    return NextResponse.redirect(new URL("/login?discord=denied", request.url));
+    return clearState(
+      NextResponse.redirect(new URL("/login?discord=denied", request.url)),
+    );
   }
+
+  if (!state || !expected || state !== expected) {
+    return clearState(
+      NextResponse.redirect(new URL("/login?discord=state", request.url)),
+    );
+  }
+
   if (!discordConfigured()) {
-    return NextResponse.redirect(new URL("/login?discord=missing", request.url));
+    return clearState(
+      NextResponse.redirect(new URL("/login?discord=missing", request.url)),
+    );
   }
 
   const redirectUri =
@@ -33,7 +62,9 @@ export async function GET(request: Request) {
   });
 
   if (!tokenRes.ok) {
-    return NextResponse.redirect(new URL("/login?discord=token", request.url));
+    return clearState(
+      NextResponse.redirect(new URL("/login?discord=token", request.url)),
+    );
   }
 
   const token = (await tokenRes.json()) as { access_token: string };
@@ -41,7 +72,9 @@ export async function GET(request: Request) {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
   if (!meRes.ok) {
-    return NextResponse.redirect(new URL("/login?discord=profile", request.url));
+    return clearState(
+      NextResponse.redirect(new URL("/login?discord=profile", request.url)),
+    );
   }
 
   const me = (await meRes.json()) as {
@@ -57,7 +90,7 @@ export async function GET(request: Request) {
     email: me.email ?? null,
   });
   const sessionId = createSession(user.id);
-  const res = NextResponse.redirect(new URL("/edit", request.url));
+  const res = clearState(NextResponse.redirect(new URL("/edit", request.url)));
   res.cookies.set(SESSION_COOKIE, sessionId, sessionCookieOptions());
   return res;
 }

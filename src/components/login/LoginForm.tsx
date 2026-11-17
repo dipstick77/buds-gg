@@ -8,9 +8,11 @@ import { TemporaryContext } from "@/components/ui/TemporaryContext";
 export function LoginForm({
   discordReady,
   discordQuery,
+  devEmailEnabled,
 }: {
   discordReady: boolean;
   discordQuery: string | null;
+  devEmailEnabled: boolean;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("you@example.com");
@@ -44,10 +46,10 @@ export function LoginForm({
         <Link href="/" className="brand-mark">
           buds<span className="brand-accent">.gg</span>
         </Link>
-        <h1 className="login-title">Claim your gaming card</h1>
+        <h1 className="login-title">Sign in to buds.gg</h1>
         <p className="login-sub">
-          Discord OAuth is preferred for duo / LFG players. Until Discord app
-          secrets are configured, use the dev login path below.
+          Discover groups and claim a player handle. Discord OAuth is preferred
+          when configured.
         </p>
 
         {discordReady ? (
@@ -62,9 +64,7 @@ export function LoginForm({
             <p>
               Set <code>DISCORD_CLIENT_ID</code>, <code>DISCORD_CLIENT_SECRET</code>,
               and <code>DISCORD_REDIRECT_URI</code> (see <code>.env.example</code>)
-              to finish Discord auth. Create an app at the Discord Developer Portal
-              with redirect{" "}
-              <code>http://localhost:3000/api/auth/discord/callback</code>.
+              to finish Discord auth.
             </p>
           </TemporaryContext>
         )}
@@ -75,33 +75,45 @@ export function LoginForm({
         {discordQuery === "denied" ? (
           <p className="form-error">Discord login was cancelled.</p>
         ) : null}
+        {discordQuery === "state" ? (
+          <p className="form-error">Discord login failed CSRF check. Try again.</p>
+        ) : null}
 
-        <form className="login-form" onSubmit={devLogin}>
-          <p className="section-label">Dev / magic-link stand-in</p>
-          <label className="field">
-            <span>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
-          <button
-            type="submit"
-            className="cta-btn cta-btn--ghost cta-btn--lg cta-btn--block"
-            disabled={busy}
-          >
-            {busy ? "Signing in…" : "Continue with email (dev)"}
-          </button>
-        </form>
+        {devEmailEnabled ? (
+          <form className="login-form" onSubmit={devLogin}>
+            <p className="section-label">Dev / magic-link stand-in</p>
+            <label className="field">
+              <span>Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </label>
+            <button
+              type="submit"
+              className="cta-btn cta-btn--ghost cta-btn--lg cta-btn--block"
+              disabled={busy}
+            >
+              {busy ? "Signing in…" : "Continue with email (dev)"}
+            </button>
+          </form>
+        ) : (
+          <TemporaryContext title="Dev email login disabled here">
+            <p>
+              Hosted builds require <code>AUTH_DEV_ALLOWLIST</code> or Discord OAuth.
+              Browse Discover without signing in.
+            </p>
+          </TemporaryContext>
+        )}
 
         {error ? <p className="form-error">{error}</p> : null}
 
         <p className="login-demos">
-          Or peek seeded demos:{" "}
-          <Link href="/maya">/maya</Link>, <Link href="/kai">/kai</Link>,{" "}
-          <Link href="/nova">/nova</Link>
+          Peek seeded demos: <Link href="/maya">/maya</Link>,{" "}
+          <Link href="/kai">/kai</Link>, <Link href="/nova">/nova</Link> ·{" "}
+          <Link href="/">Discover</Link>
         </p>
       </main>
     </div>

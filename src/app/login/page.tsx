@@ -1,5 +1,9 @@
 import { LoginForm } from "@/components/login/LoginForm";
-import { discordConfigured, getCurrentUser } from "@/lib/auth";
+import {
+  discordConfigured,
+  getCurrentUser,
+  isDevEmailLoginEnabled,
+} from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +20,7 @@ export default async function LoginPage({
     <LoginForm
       discordReady={discordConfigured()}
       discordQuery={params.discord ?? null}
+      devEmailEnabled={isDevEmailLoginEnabled()}
     />
   );
 }
