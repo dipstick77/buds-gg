@@ -51,7 +51,7 @@ export default async function PublicProfilePage({ params }: Props) {
           Claim this handle
         </Link>
         <Link href="/" className="nav-link">
-          Back home
+          Back to Discover
         </Link>
       </div>
     );

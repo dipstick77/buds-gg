@@ -1,9 +1,12 @@
-import { LandingPage } from "@/components/landing/LandingPage";
-import { listExampleHandles } from "@/lib/db";
-
-export const dynamic = "force-dynamic";
+import { DiscoverView } from "@/components/discover/DiscoverView";
+import { AppShell } from "@/components/shell/AppShell";
+import { listGroups } from "@/lib/groups";
 
 export default function HomePage() {
-  const examples = listExampleHandles();
-  return <LandingPage examples={examples} />;
+  const groups = listGroups();
+  return (
+    <AppShell>
+      <DiscoverView groups={groups} initialTab="groups" />
+    </AppShell>
+  );
 }

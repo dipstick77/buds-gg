@@ -156,10 +156,11 @@ export function ProfileView({
           ) : null}
 
           <div className="motion-rise delay-3">
-            <TemporaryContext title="Coming later — not in this MVP">
+            <TemporaryContext title="Player vanity — Temporary Context">
               <p>
-                Live Discord presence and Steam inventory sync are deferred. Manual
-                Copy / Open links above are the product for now.
+                <code>/{profile.handle}</code> is a share card stub. Rich discovery
+                profiles, Auth, and matching land with Supabase. Primary product surface
+                is <Link href="/">Discover</Link> (groups-first).
               </p>
             </TemporaryContext>
           </div>
@@ -167,7 +168,7 @@ export function ProfileView({
           {showBrandFooter ? (
             <footer className="profile-footer">
               <Link href="/">
-                Make yours — buds<span className="brand-accent">.gg</span>
+                Discover groups — buds<span className="brand-accent">.gg</span>
               </Link>
             </footer>
           ) : null}

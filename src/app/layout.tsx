@@ -10,11 +10,11 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "buds.gg — your gaming card for your buds",
+    default: "buds.gg — Find your people.",
     template: "%s · buds.gg",
   },
   description:
-    "One short URL where your gaming buds can find every platform you play on — Copy / Open CTAs for duo and LFG players.",
+    "Adult gaming social discovery — find groups and players that fit your vibe. Groups-first recruitment on buds.gg.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
 };
 
