@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ChevronDown, Gamepad2 } from "lucide-react";
 import { TemporaryContext } from "@/components/ui/TemporaryContext";
 import {
   FILTER_OPTIONS,
@@ -17,15 +18,17 @@ type SortId = "best" | "active" | "largest" | "smallest";
 
 export function DiscoverView({
   groups,
-  initialTab = "groups",
+  initialTab = "for-you",
+  searchQuery = "",
 }: {
   groups: SeedGroup[];
   initialTab?: TabId;
+  searchQuery?: string;
 }) {
   const [tab, setTab] = useState<TabId>(initialTab);
-  const [query, setQuery] = useState("");
   const [game, setGame] = useState("");
   const [style, setStyle] = useState("");
+  const [age, setAge] = useState("");
   const [platform, setPlatform] = useState("");
   const [region, setRegion] = useState("");
   const [timezone, setTimezone] = useState("");
@@ -33,14 +36,17 @@ export function DiscoverView({
   const [recruitment, setRecruitment] = useState<RecruitmentMode | "">("");
   const [sort, setSort] = useState<SortId>("best");
   const [adultOnly, setAdultOnly] = useState(true);
+  const [englishOnly, setEnglishOnly] = useState(true);
   const [includeApplications, setIncludeApplications] = useState(true);
   const [activeTag, setActiveTag] = useState("");
 
+  const effectiveQuery = searchQuery;
+
   const filtered = useMemo(() => {
     let list = [...groups];
+    const q = effectiveQuery.trim().toLowerCase();
 
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
+    if (q) {
       list = list.filter(
         (g) =>
           g.name.toLowerCase().includes(q) ||
@@ -56,13 +62,16 @@ export function DiscoverView({
     if (timezone) list = list.filter((g) => g.timezone === timezone);
     if (size) list = list.filter((g) => g.preferredSize === size);
     if (recruitment) list = list.filter((g) => g.recruitmentMode === recruitment);
-    if (adultOnly) list = list.filter((g) => g.minAge >= 18);
+    if (adultOnly || age === "18+") list = list.filter((g) => g.minAge >= 18);
+    if (age === "21+") list = list.filter((g) => g.minAge >= 21);
     if (!includeApplications) list = list.filter((g) => g.recruitmentMode === "open");
     if (activeTag) {
       list = list.filter(
         (g) => g.tags.includes(activeTag) || g.games.includes(activeTag),
       );
     }
+    // englishOnly is UI chrome for Phase A — seed groups are all EN
+    void englishOnly;
 
     list.sort((a, b) => {
       switch (sort) {
@@ -81,9 +90,10 @@ export function DiscoverView({
     return list;
   }, [
     groups,
-    query,
+    effectiveQuery,
     game,
     style,
+    age,
     platform,
     region,
     timezone,
@@ -91,41 +101,45 @@ export function DiscoverView({
     recruitment,
     sort,
     adultOnly,
+    englishOnly,
     includeApplications,
     activeTag,
   ]);
 
   return (
-    <div className="discover-layout">
-      <div className="discover-primary">
-        <section className="discover-hero motion-rise">
-          <div className="discover-hero__copy">
-            <h1 className="discover-hero__title">
-              Find your <span className="brand-accent">people.</span>
+    <div className="d-layout">
+      <div className="d-primary">
+        <section className="d-hero motion-rise">
+          <div className="d-hero__copy">
+            <h1 className="d-hero__title">
+              Find your <span>people.</span>
             </h1>
-            <p className="discover-hero__sub">
-              Discover gaming groups and players that fit your vibe — recruitment-first, not another thin social feed.
+            <p className="d-hero__sub">
+              Discover gaming groups and players that fit your vibe.
             </p>
-            <div className="discover-hero__cta">
+            <div className="d-hero__cta">
               <button
                 type="button"
-                className="cta-btn cta-btn--primary cta-btn--lg"
+                className="d-btn d-btn--primary"
                 onClick={() => setTab("groups")}
               >
                 Browse Groups →
               </button>
               <button
                 type="button"
-                className="cta-btn cta-btn--ghost cta-btn--lg"
+                className="d-btn d-btn--outline"
                 onClick={() => setTab("players")}
               >
                 Find Players
               </button>
             </div>
           </div>
+          <div className="d-hero__art" aria-hidden>
+            <Gamepad2 size={64} strokeWidth={1.25} />
+          </div>
         </section>
 
-        <div className="discover-tabs" role="tablist" aria-label="Discover views">
+        <div className="d-tabs" role="tablist" aria-label="Discover views">
           {(
             [
               ["for-you", "For You"],
@@ -138,7 +152,7 @@ export function DiscoverView({
               type="button"
               role="tab"
               aria-selected={tab === id}
-              className={`discover-tab ${tab === id ? "is-active" : ""}`}
+              className={`d-tab ${tab === id ? "is-active" : ""}`}
               onClick={() => setTab(id)}
             >
               {label}
@@ -146,41 +160,29 @@ export function DiscoverView({
           ))}
         </div>
 
-        {tab === "for-you" ? (
-          <TemporaryContext title="Personalized For You — Temporary Context">
+        {tab === "players" ? (
+          <TemporaryContext title="Player directory — Temporary Context">
             <p>
-              Match scoring and preference-based recommendations need Auth + profile prefs in
-              Supabase. Until then, use the <strong>Groups</strong> tab with seed data.
+              Player Discover lands after group recruitment. Demo profiles:{" "}
+              <Link href="/maya">/maya</Link>, <Link href="/kai">/kai</Link>,{" "}
+              <Link href="/nova">/nova</Link>.
             </p>
           </TemporaryContext>
         ) : null}
 
-        {tab === "players" ? (
-          <div className="discover-stub-stack">
-            <TemporaryContext title="Player directory — Temporary Context">
-              <p>
-                Player Discover and matching land after group recruitment. Demo player cards
-                remain at vanity URLs like <Link href="/maya">/maya</Link>,{" "}
-                <Link href="/kai">/kai</Link>, <Link href="/nova">/nova</Link>.
-              </p>
-            </TemporaryContext>
-          </div>
-        ) : null}
-
         {tab === "groups" || tab === "for-you" ? (
           <>
-            <div className="discover-filters">
-              <label className="discover-filter-search">
-                <span className="visually-hidden">Filter groups</span>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Filter by name, game, or tag…"
-                />
-              </label>
+            {tab === "for-you" ? (
+              <TemporaryContext title="Personalized For You — Temporary Context">
+                <p>
+                  Match scoring needs Auth + profile prefs. Until then, seed groups stand in
+                  for ranked recommendations.
+                </p>
+              </TemporaryContext>
+            ) : null}
 
-              <div className="discover-filter-row">
+            <div className="d-filters">
+              <div className="d-filter-row">
                 <Select
                   label="Games"
                   value={game}
@@ -192,6 +194,15 @@ export function DiscoverView({
                   value={style}
                   onChange={setStyle}
                   options={FILTER_OPTIONS.styles.map((s) => ({ value: s, label: s }))}
+                />
+                <Select
+                  label="Age"
+                  value={age}
+                  onChange={setAge}
+                  options={[
+                    { value: "18+", label: "18+" },
+                    { value: "21+", label: "21+" },
+                  ]}
                 />
                 <Select
                   label="Platform"
@@ -224,7 +235,7 @@ export function DiscoverView({
                   }))}
                 />
                 <Select
-                  label="Recruitment"
+                  label="More Filters"
                   value={recruitment}
                   onChange={(v) => setRecruitment(v as RecruitmentMode | "")}
                   options={FILTER_OPTIONS.recruitment.map((r) => ({
@@ -232,7 +243,7 @@ export function DiscoverView({
                     label: r.label,
                   }))}
                 />
-                <label className="discover-sort">
+                <label className="d-sort">
                   <span>Sort by</span>
                   <select value={sort} onChange={(e) => setSort(e.target.value as SortId)}>
                     <option value="best">Best Match</option>
@@ -240,24 +251,21 @@ export function DiscoverView({
                     <option value="largest">Largest</option>
                     <option value="smallest">Smallest</option>
                   </select>
+                  <ChevronDown size={14} aria-hidden />
                 </label>
               </div>
             </div>
 
-            {tab === "groups" ? (
-              <p className="discover-count">
-                {filtered.length} group{filtered.length === 1 ? "" : "s"} · seed demo data
-              </p>
-            ) : (
-              <p className="discover-count">
-                Showing seed groups as a stand-in for ranked matches
-              </p>
-            )}
+            <p className="d-count">
+              {tab === "groups"
+                ? `${filtered.length} group${filtered.length === 1 ? "" : "s"} · seed demo data`
+                : `Showing ${filtered.length} seed groups as ranked stand-ins`}
+            </p>
 
             {filtered.length === 0 ? (
-              <p className="discover-empty">No groups match these filters. Clear a chip and try again.</p>
+              <p className="d-empty">No groups match these filters. Clear a chip and try again.</p>
             ) : (
-              <div className="group-grid">
+              <div className="d-grid">
                 {filtered.map((group, i) => (
                   <GroupCard key={group.slug} group={group} index={i} />
                 ))}
@@ -266,70 +274,72 @@ export function DiscoverView({
           </>
         ) : null}
 
-        <div className="discover-context-stack">
+        <div className="d-context">
           <TemporaryContext title="Auth & Supabase — Temporary Context">
             <ul>
-              <li>No Supabase keys required for this UI shell — seed JSON powers groups.</li>
+              <li>No Supabase keys required — seed JSON powers this shell.</li>
               <li>
                 Set <code>NEXT_PUBLIC_SUPABASE_URL</code> +{" "}
-                <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> later for Auth, RLS, and live data.
+                <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> later for Auth and live data.
               </li>
-              <li>Applications, matching scores, and adult attestation are deferred.</li>
             </ul>
           </TemporaryContext>
         </div>
       </div>
 
-      <aside className="discover-rail" aria-label="Quick filters">
-        <section className="discover-rail__card">
-          <p className="section-label">Your profile</p>
-          <div className="discover-rail__profile">
-            <span className="discover-avatar discover-avatar--lg">JD</span>
+      <aside className="d-rail" aria-label="Profile and quick filters">
+        <section className="d-rail__card">
+          <p className="d-rail__label">Your Profile</p>
+          <div className="d-rail__profile">
+            <span className="d-avatar d-avatar--lg">
+              JD
+              <span className="d-avatar__status" aria-hidden />
+            </span>
             <div>
-              <p className="discover-rail__name">jordan.dev</p>
-              <p className="discover-rail__status">Looking for friends</p>
+              <p className="d-rail__name">jordan.dev</p>
+              <p className="d-rail__status">Looking for friends</p>
             </div>
           </div>
-          <p className="section-label" style={{ marginTop: "0.75rem" }}>
-            Your interests
-          </p>
-          <ul className="discover-rail__tags">
+          <p className="d-rail__label">Your interests</p>
+          <ul className="d-tags">
             {["PC", "FPS", "RPG"].map((t) => (
               <li key={t}>{t}</li>
             ))}
+            <li>+3</li>
           </ul>
-          <TemporaryContext title="Demo profile rail">
-            <p>Signed-in prefs appear here after Auth. This block is placeholder chrome.</p>
-          </TemporaryContext>
         </section>
 
-        <section className="discover-rail__card">
-          <p className="section-label">Quick filters</p>
-          <label className="discover-toggle">
+        <section className="d-rail__card">
+          <p className="d-rail__label">Quick Filters</p>
+          <label className="d-toggle">
+            <span>18+ Only</span>
             <input
               type="checkbox"
               checked={adultOnly}
               onChange={(e) => setAdultOnly(e.target.checked)}
             />
-            <span>18+ Only</span>
           </label>
-          <label className="discover-toggle">
-            <input type="checkbox" checked disabled readOnly />
+          <label className="d-toggle">
             <span>English Only</span>
+            <input
+              type="checkbox"
+              checked={englishOnly}
+              onChange={(e) => setEnglishOnly(e.target.checked)}
+            />
           </label>
-          <label className="discover-toggle">
+          <label className="d-toggle">
+            <span>Include Applications</span>
             <input
               type="checkbox"
               checked={includeApplications}
               onChange={(e) => setIncludeApplications(e.target.checked)}
             />
-            <span>Include Applications</span>
           </label>
         </section>
 
-        <section className="discover-rail__card">
-          <p className="section-label">Popular tags</p>
-          <ul className="discover-rail__tags discover-rail__tags--wrap">
+        <section className="d-rail__card">
+          <p className="d-rail__label">Popular Tags</p>
+          <ul className="d-tags">
             {POPULAR_TAGS.map((tag) => (
               <li key={tag}>
                 <button
@@ -360,7 +370,7 @@ function Select({
   options: Array<{ value: string; label: string }>;
 }) {
   return (
-    <label className="discover-chip-select">
+    <label className="d-chip">
       <span>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">Any</option>
@@ -370,6 +380,7 @@ function Select({
           </option>
         ))}
       </select>
+      <ChevronDown size={12} aria-hidden />
     </label>
   );
 }

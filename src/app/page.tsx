@@ -1,12 +1,7 @@
-import { DiscoverView } from "@/components/discover/DiscoverView";
-import { AppShell } from "@/components/shell/AppShell";
+import { DiscoverPageClient } from "@/components/discover/DiscoverPageClient";
 import { listGroups } from "@/lib/groups";
 
 export default function HomePage() {
   const groups = listGroups();
-  return (
-    <AppShell>
-      <DiscoverView groups={groups} initialTab="groups" />
-    </AppShell>
-  );
+  return <DiscoverPageClient groups={groups} initialTab="for-you" />;
 }
